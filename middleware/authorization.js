@@ -1,12 +1,11 @@
 const jwt = require("jsonwebtoken")
+const CustomErrorHandler = require("../utils/custom-error-handler")
 const authorization = (req, res, next) => {
     try {
         const bearerToken = req.headers.authorization
 
         if (!bearerToken) {
-            return res.status(401).json({
-                message: "bearer not found"
-            })
+            throw CustomErrorHandler.UnAuthorized("bearer toen not found")
         }
 
         const token = bearerToken.split(" ")
@@ -17,9 +16,7 @@ const authorization = (req, res, next) => {
             })
         }
         if(!token[1]) {
-            return res.status(404).json({
-                message: "token not found"
-            })
+            throw CustomErrorHandler.UnAuthorized("token nou found")
         }
 
         const decode = jwt.verify(token[1], process.env.SECRET_KEY)
@@ -32,8 +29,6 @@ const authorization = (req, res, next) => {
         req.user = decode
         next()
     }catch(error) {
-        res.status(500).json({
-            message: error.message
-        })
+   next(error)
     }
 }

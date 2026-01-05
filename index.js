@@ -19,5 +19,5 @@ app.use("/images", express.static(path.join(__dirname, "rasm")))
 
 
 app.listen( PORT, () => {
-    console.log("servr is running at:" + PORT);
+    console.log("server is running at:" + PORT);
 })
