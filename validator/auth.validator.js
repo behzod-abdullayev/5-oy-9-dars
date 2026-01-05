@@ -42,7 +42,7 @@ const registerValidator = Joi.object({
         .default("user")
 });
 
-
+//login
 const loginValidator = Joi.object({
     email: Joi.string().trim().lowercase().email().required(),
     password: Joi.string().trim().required()

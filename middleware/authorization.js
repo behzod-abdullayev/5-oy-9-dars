@@ -1,34 +1,42 @@
-const jwt = require("jsonwebtoken")
-const CustomErrorHandler = require("../utils/custom-error-handler")
-const authorization = (req, res, next) => {
+const jwt = require("jsonwebtoken");
+const CustomErrorHandler = require("../utils/custom-error-handler");
+
+const verifyToken = (req, res, next) => {
     try {
-        const bearerToken = req.headers.authorization
+        const authHeader = req.headers.authorization;
 
-        if (!bearerToken) {
-            throw CustomErrorHandler.UnAuthorized("bearer toen not found")
+        if (!authHeader || !authHeader.startsWith("Bearer ")) {
+            return next(CustomErrorHandler.UnAuthorized("Bearer token topilmadi!"));
         }
 
-        const token = bearerToken.split(" ")
+        const token = authHeader.split(" ")[1];
 
-        if(token[0] !== "Bearer") {
-            return res.status(401).json({
-                message: "Bearer token is required"
-            })
-        }
-        if(!token[1]) {
-            throw CustomErrorHandler.UnAuthorized("token nou found")
+        if (!token) {
+            return next(CustomErrorHandler.UnAuthorized("Token taqdim etilmadi!"));
         }
 
-        const decode = jwt.verify(token[1], process.env.SECRET_KEY)
+        const decoded = jwt.verify(token, process.env.SECRET_KEY);
 
-        if(decode.role !== "admin") {
-            return res.status(403).json({
-                message: "you are not admin"
-            })
+        req.user = decoded;
+        
+        next();
+    } catch (error) {
+        if (error.name === "TokenExpiredError") {
+            return next(CustomErrorHandler.UnAuthorized("Token muddati tugagan!"));
         }
-        req.user = decode
-        next()
-    }catch(error) {
-   next(error)
+        next(CustomErrorHandler.UnAuthorized("Yaroqsiz token!"));
     }
-}
+};
+
+// Admin ekanligini tekshirish uchun alohida middleware
+const isAdmin = (req, res, next) => {
+    if (req.user && req.user.role === "admin") {
+        next();
+    } else {
+        return res.status(403).json({
+            message: "Sizda ushbu amalni bajarish uchun huquq yo'q (Faqat adminlar uchun)!"
+        });
+    }
+};
+
+module.exports = { verifyToken, isAdmin };
