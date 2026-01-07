@@ -28,14 +28,12 @@ const verifyToken = (req, res, next) => {
     }
 };
 
-// Admin ekanligini tekshirish uchun alohida middleware
+// Admin 
 const isAdmin = (req, res, next) => {
     if (req.user && req.user.role === "admin") {
         next();
     } else {
-        return res.status(403).json({
-            message: "Sizda ushbu amalni bajarish uchun huquq yo'q (Faqat adminlar uchun)!"
-        });
+return next(CustomErrorHandler.forbidden("siz admin emassiz"))
     }
 };
 

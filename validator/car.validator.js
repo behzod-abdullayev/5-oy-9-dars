@@ -55,5 +55,5 @@ const carValidator = joi.object({
 });
 
 module.exports = {
-  carValidator: (data) => carValidator.validate(data, { abortEarly: false }),
+  carValidator
 };
